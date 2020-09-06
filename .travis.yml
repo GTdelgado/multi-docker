@@ -1,0 +1,21 @@
+sudo: required
+services:
+    - docker
+
+before:install:
+    - docker build -t gtdelgado/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run gtdelgado/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t gtdelgado/multi-client ./client
+    - docker build -t gtdelgado/multi-nginx ./nginx
+    - docker build -t gtdelgado/multi-server ./server
+    - docker build -t gtdelgado/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push gtdelgado/multi-client
+    - docker push gtdelgado/multi-nginx
+    - docker push gtdelgado/multi-server
+    - docker push gtdelgado/multi-worker
+    
